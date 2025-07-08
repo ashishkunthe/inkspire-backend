@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth";
 
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -21,6 +22,15 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
-  console.log(`server is runnig ${PORT}`);
-});
+mongoose
+  .connect(process.env.DATABASE_URL as string)
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
+  });
