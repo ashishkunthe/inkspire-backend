@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth";
+import blogRoutes from "./routes/blog";
 
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api", authRoutes);
+app.use("/api", blogRoutes);
 
 app.get("/", (req, res) => {
   res.json({
