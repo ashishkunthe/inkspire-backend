@@ -11,7 +11,7 @@ export async function registerUser(req: Request, res: Response) {
 
     if (userExist) {
       res.status(409).json({
-        message: "the user already exist",
+        message: "User already exist",
       });
       return;
     }
@@ -29,13 +29,52 @@ export async function registerUser(req: Request, res: Response) {
     );
 
     res.status(200).json({
-      message: "user registered sucessfully",
+      message: "User registered sucessfully",
       token: token,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: " something went wrong! please try again ",
+      message: "something went wrong! please try again ",
+    });
+  }
+}
+
+export async function loginUser(req: Request, res: Response) {
+  const { email, password } = req.body;
+
+  try {
+    const findUser = await User.findOne({ email });
+
+    if (!findUser) {
+      res.status(404).json({
+        message: "user is not registered",
+      });
+      return;
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, findUser.password);
+
+    if (!isPasswordMatch) {
+      res.status(401).json({
+        message: "password is mismached",
+      });
+      return;
+    }
+
+    const token = jwt.sign(
+      { userId: findUser._id },
+      process.env.JWT_SECRET as string
+    );
+
+    res.status(200).json({
+      message: "login sucessfull",
+      token: token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "something went wrong",
     });
   }
 }
