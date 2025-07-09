@@ -48,3 +48,26 @@ export async function getBlogs(req: Request, res: Response) {
     });
   }
 }
+
+export async function getBlog(req: Request, res: Response) {
+  const id = req.params.id;
+
+  try {
+    const blog = await Blog.findById(id)
+      .populate("author", "username email")
+      .populate("comments.user", "username");
+
+    if (!blog) {
+      return res.status(404).json({
+        message: "Blog not found",
+      });
+    }
+
+    res.status(200).json({ blog: blog });
+  } catch (error) {
+    console.log("something went wrong", error);
+    res.status(500).json({
+      message: "something went wrong",
+    });
+  }
+}
