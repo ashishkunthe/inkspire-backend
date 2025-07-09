@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import Blog from "../models/Blogs";
 import User from "../models/User";
+import { Types } from "mongoose";
 
 interface RequestExtend extends Request {
-  userId: string;
+  userId: string | Types.ObjectId;
 }
 
 export async function createBlog(req: RequestExtend, res: Response) {
@@ -97,6 +98,42 @@ export async function addComment(req: RequestExtend, res: Response) {
     console.log("something went wrong", error);
     res.status(500).json({
       message: "something went wrong",
+    });
+  }
+}
+
+export async function Likes(req: RequestExtend, res: Response) {
+  const userId = req.userId;
+  const id = req.params.id;
+
+  try {
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({
+        message: "Blog not found",
+      });
+    }
+
+    const liked = blog?.likes.includes(new Types.ObjectId(userId));
+
+    if (liked) {
+      blog.likes = blog?.likes.filter(
+        (likeUserId) => likeUserId.toString() !== userId
+      );
+    } else {
+      blog?.likes.push(new Types.ObjectId(userId));
+    }
+    await blog?.save();
+    res.json({
+      success: true,
+      message: liked ? "Unliked the blog" : "Liked the blog",
+      likeCount: blog.likes.length,
+    });
+  } catch (error) {
+    console.error("Error liking blog:", error);
+    res.status(500).json({
+      message: "Something went wrong",
     });
   }
 }
