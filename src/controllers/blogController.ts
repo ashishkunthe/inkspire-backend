@@ -71,3 +71,32 @@ export async function getBlog(req: Request, res: Response) {
     });
   }
 }
+
+export async function addComment(req: RequestExtend, res: Response) {
+  const userId = req.userId;
+  const id = req.params.id;
+  const { text } = req.body;
+
+  try {
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({
+        message: "Blog not found",
+      });
+    }
+
+    blog.comments.push({ user: userId, text: text });
+    await blog.save();
+
+    res.status(200).json({
+      status: true,
+      message: "comment added",
+    });
+  } catch (error) {
+    console.log("something went wrong", error);
+    res.status(500).json({
+      message: "something went wrong",
+    });
+  }
+}
