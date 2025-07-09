@@ -29,3 +29,22 @@ export async function createBlog(req: RequestExtend, res: Response) {
     });
   }
 }
+
+export async function getBlogs(req: Request, res: Response) {
+  try {
+    const blogs = await Blog.find()
+      .sort({ createdAt: -1 })
+      .populate("author", "username email");
+
+    res.status(200).json({
+      success: true,
+      message: "Fetched all blogs",
+      blogs: blogs,
+    });
+  } catch (error) {
+    console.log("something went wrong");
+    res.status(500).json({
+      message: "something went wrong",
+    });
+  }
+}
