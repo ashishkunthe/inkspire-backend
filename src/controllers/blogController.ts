@@ -172,3 +172,34 @@ export async function editBlog(req: RequestExtend, res: Response) {
     res.status(500).json({ message: "Something went wrong" });
   }
 }
+
+export async function deleteBlog(req: RequestExtend, res: Response) {
+  const userId = req.userId;
+  const id = req.params.id;
+
+  try {
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    if (blog.author.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "You are not the author" });
+    }
+
+    await Blog.findByIdAndDelete(id);
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { blogs: blog._id },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Blog deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting blog:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+}
