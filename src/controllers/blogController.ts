@@ -203,3 +203,41 @@ export async function deleteBlog(req: RequestExtend, res: Response) {
     res.status(500).json({ message: "Something went wrong" });
   }
 }
+
+export async function deleteComment(req: RequestExtend, res: Response) {
+  const blogId = req.params.id;
+  const commentId = req.params.commentId;
+  const userId = req.userId;
+
+  try {
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    const comment = blog.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (comment?.user?.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You are not the comment author" });
+    }
+
+    blog.comments.pull(commentId);
+
+    await blog.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Comment deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+}
