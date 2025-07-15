@@ -35,7 +35,11 @@ export async function getBlogs(req: Request, res: Response) {
   try {
     const blogs = await Blog.find()
       .sort({ createdAt: -1 })
-      .populate("author", "username email");
+      .populate("author", "username email")
+      .populate({
+        path: "comments",
+        populate: { path: "user", select: "username" },
+      });
 
     res.status(200).json({
       success: true,
